@@ -14,8 +14,8 @@ var HomeGridModel = require("../../mongodb/models/HomeGridModel");
 var UserEquipmentModel = require("../../mongodb/models/UserEquipmentModel");
 
 /* 常量JSON数据 */
-var UserEquipmentType = require("../const/userEquipmentType");
-var UserEquipmentBrand = require("../const/userEquipmentBrand");
+var UserEquipmentType = require("../const/UserEquipmentType");
+var UserEquipmentBrand = require("../const/UserEquipmentBrand");
 
 var TargetAnalyzer = module.exports;
 
@@ -47,7 +47,7 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 							sentence = sentence.replace(home.floorName, "");
 						}
 					}
-					
+
 					var targetLayers = [];
 					for(i=0;i<layers.length;i++) {
 						var layer = layers[i];
@@ -84,7 +84,7 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 					var hasFiguredUeq = false;
 					/* 如果有明确的设备，执行 */
 					if(targetUserEquipments.length > 0) {
-						hasFiguredUeq = true; 
+						hasFiguredUeq = true;
 					/* 如果没有明确的设备，根据前置的条件再来分析设备 */
 					} else {
 						var temp = [];
@@ -131,14 +131,14 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 
 				/* 根据结果再次分析设备 */
 				function(param, callback) {
+					var i,j,k;
 					var hasFiguredUeq = param.hasFiguredUeq;
+					var commandSentence = param.commandSentence;
+					var tempUserEquipments = param.targetUserEquipments;
+					var targetUserEquipments = [];
 					if(param.hasFiguredUeq) {
 
 					} else {
-						var commandSentence = param.commandSentence;
-						var tempUserEquipments = param.targetUserEquipments;
-						var targetUserEquipments = [];
-
 						/* 检查是否有设备类型 */
 						var keyTypes = [];
 						for(var key in UserEquipmentType) {
@@ -146,7 +146,7 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 								keyTypes.push(key);
 								commandSentence = commandSentence.replace(key, "");
 							} else {
-								for(var i=0;i<UserEquipmentType[key].length;i++) {
+								for(i=0;i<UserEquipmentType[key].length;i++) {
 									if(commandSentence.indexOf(UserEquipmentType[key][i]) > -1) {
 										keyTypes.push(key);
 										commandSentence = commandSentence.replace(key, "");
@@ -157,7 +157,7 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 						/* 检查是否有设备品牌 */
 						var keyBrands = [];
 						for(key in UserEquipmentBrand) {
-							for(var i=0;i<UserEquipmentBrand[key].length;i++) {
+							for(i=0;i<UserEquipmentBrand[key].length;i++) {
 								if(commandSentence.indexOf(UserEquipmentBrand[key][i]) > -1) {
 									keyBrands.push(UserEquipmentBrand[key][i]);
 									commandSentence = commandSentence.replace(UserEquipmentBrand[key][i], "");
@@ -165,7 +165,6 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 							}
 						}
 
-						var i,j,k;
 						if(keyTypes.length > 0 && keyBrands.length > 0) {
 							for(i=0;i<keyTypes.length;i++) {
 								for(j=0;j<keyBrands.length;j++) {

@@ -13,6 +13,7 @@ var UserModel = require("../../mongodb/models/UserModel");
 var HomeGridModel = require("../../mongodb/models/HomeGridModel");
 var UserEquipmentModel = require("../../mongodb/models/UserEquipmentModel");
 var UserRequestModel = require("../../mongodb/models/UserRequestModel");
+var UserContextModel = require("../../mongodb/business/UserContextModel");
 
 var DataPrepare = module.exports;
 
@@ -49,7 +50,7 @@ DataPrepare.prepare = function(info, ret_callback, cb) {
 							ret_callback(ResponseUtil.resp(Code.HOME.HOME_NOT_EXIST));
 						}
 					}
-					
+
 				});
 			},
 
@@ -64,7 +65,7 @@ DataPrepare.prepare = function(info, ret_callback, cb) {
 						ret_callback(ResponseUtil.resp(Code.USER.DATABASE));
 					} else {
 						if(!!homeGrids) {
-							callback(null, user, homes, homeGrids);						
+							callback(null, user, homes, homeGrids);
 						} else {
 							ret_callback(ResponseUtil.resp(Code.HOME.HOMEGRID_NOT_CREATED));
 						}
@@ -105,6 +106,43 @@ DataPrepare.prepare = function(info, ret_callback, cb) {
 				});
 			},
 
+			/* 判断用户的文本是否属于回答 */
+			function(info, callback) {
+				var sentence = info.sentence;
+				var now = new Date();
+			    var min = now.getMinutes();
+			    min = min - 1000;
+			    now.setMinutes(min);
+			    debug("查找1000分钟以内的所有用户context___"  + DateUtil.format(now));
+				var param = {
+					userMobile:info.user.mobile,
+					answered:false,
+					addTime:{"$gte": now}
+				};
+				UserContextModel.findOne(param).sort({addTime:-1}).exec().then(function(context) {
+					if(!!context) {
+						var opList = JSON.parse(context.optionList);
+						var flag = false;
+						for(var i=0;i<opList.length;i++) {
+							var op = opList[i];
+							if(op.name === sentence) {
+								flag = true;
+							}
+						}
+
+						if(flag) {
+							info.contextId = context._id + "";
+						}
+						callback(null, info);
+					} else {
+						callback(null, info);
+					}
+				}).catch(function(err) {
+					debug(err);
+					callback(null, info);
+				});
+			},
+
 			/* 预处理，将灯字替换为电灯 */
 			function(info, callback) {
 				var sentence = info.sentence;
@@ -139,7 +177,7 @@ var settleInfo = function(info, user, homes, homeGrids, userEquipments) {
 
 	for(var hg_i in homeGrids) {
 		var group_u = [];
-		for(ue_i in userEquipments) {
+		for(var ue_i in userEquipments) {
 			if(homeGrids[hg_i]._id + "" === userEquipments[ue_i].homeGridId) {
 				group_u.push(userEquipments[ue_i]);
 			}
@@ -164,7 +202,7 @@ var settleInfo = function(info, user, homes, homeGrids, userEquipments) {
 	info.user = user;
 	info.homes = homes;
 	info.homeGrids = homeGrids;
-	info.userEquipments = userEquipments;	
+	info.userEquipments = userEquipments;
 };
 
 var renderUserObject = function(user) {
@@ -188,7 +226,7 @@ var renderHomeObject = function(homes) {
 			var home = homes[h_i];
 			wrap._id = home._id + "";
 			wrap.floorName = home.floorName;
-			
+
 			if(!!home.layers) {
 				var wrapLayerArray = [];
 				for(var i=0;i<home.layers.length;i++) {

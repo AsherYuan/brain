@@ -9,3 +9,7 @@ var DateUtil = module.exports;
 DateUtil.now = function() {
 	return Moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
 };
+
+DateUtil.format = function(date) {
+	return Moment(date).format("YYYY-MM-DD HH:mm:ss");
+};

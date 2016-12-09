@@ -22,13 +22,13 @@ ResponsePrepare.prepare = function(info, ret_callback, cb) {
 	/* 如果有多个选项，则询问用户，否则进入命令执行阶段 */
 	if(info.optionHomeGrids && info.optionHomeGrids.length > 1) {
 		var optionList = [];
-		var msg = "请选择哪个位置的空调:";
+		var msg = "请选择哪个位置的设备:";
 		for(var i=0;i<info.optionHomeGrids.length;i++) {
 			var homeGrid = info.optionHomeGrids[i];
 			var option = {};
 			option = "<a href='" + homeGrid.name + "'>" + homeGrid.name + "</a>";
 			optionList.push(option);
-			if(i == 0) {
+			if(i === 0) {
 				msg += option;
 			} else {
 				msg += " | " + option;
@@ -37,7 +37,7 @@ ResponsePrepare.prepare = function(info, ret_callback, cb) {
 		/* 返回给用户 */
 		var data = {};
 		data.delayDesc = "";
-		data.delayOrdder = false;
+		data.delayOrder = false;
 		data.optionList = optionList;
 		data.inputstr = info.sentence;
 		data.inputstr_id = info.inputstr_id;
@@ -99,13 +99,13 @@ ResponsePrepare.prepare = function(info, ret_callback, cb) {
 							debug('没有分析出实际操作，准备进入图灵流程');
 							cb(null, info, ret_callback);
 						}
-					}					
+					}
 				});
 			});
 		} else {
 			debug('没有目标设备发现，准备进入图灵流程');
 			cb(null, info, ret_callback);
 		}
-		
+
 	}
 };

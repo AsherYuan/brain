@@ -48,7 +48,7 @@ router.get("/list", function(req, res, next) {
 	WordModel.find(params).limit(limit).skip(skip).sort({wordLength:-1, score:-1, subScore:-1}).exec().then(function(list) {
 		console.log("params:" + params);
 		WordModel.count(params, function(err, count) {
-			console.log("count:" + count); 
+			console.log("count:" + count);
 			var pageCount = Math.ceil(count / pageSize);
 			var pageList = [];
 			var cursor = 0;
@@ -112,7 +112,7 @@ router.post("/save", function(req, res, next) {
 			if(err) {
 				res.send("err");
 			} else {
-				res.send("ok");	
+				res.send("ok");
 			}
 		});
 	} else {
@@ -130,7 +130,7 @@ router.post("/save", function(req, res, next) {
 			if(err) {
 				res.send("err");
 			} else {
-				res.send("ok");	
+				res.send("ok");
 			}
 		});
 	}
@@ -170,7 +170,7 @@ router.post("/editWord", function(req, res, next) {
 	WordModel.findById(_id, function(err, word) {
 		if(err) {
 			console.log(err);
-			res.send(err)
+			res.send(err);
 		} else {
 			res.send(word);
 		}

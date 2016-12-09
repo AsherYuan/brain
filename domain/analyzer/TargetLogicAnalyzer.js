@@ -69,7 +69,7 @@ TargetLogicAnalyzer.analyze = function(info, ret_callback, cb) {
 										for(keyLayer in layers) {
 											var gs = layers[keyLayer].homeGrids;
 											for(key in gs) {
-												temp = temp.concat(grids[key].userEquipments);
+												temp = temp.concat(gs[key].userEquipments);
 											}
 										}
 									}
