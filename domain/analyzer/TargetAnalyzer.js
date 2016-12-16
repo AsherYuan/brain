@@ -71,9 +71,9 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 					var targetUserEquipments = [];
 					for(i=0;i<userEquipments.length;i++) {
 						var userEquipment = userEquipments[i];
-						if(!!userEquipment.name && sentence.indexOf(userEquipment.name) > -1) {
+						if(!!userEquipment.e_name && sentence.indexOf(userEquipment.e_name) > -1) {
 							targetUserEquipments.push(userEquipment);
-							sentence = sentence.replace(userEquipment.name, "");
+							sentence = sentence.replace(userEquipment.e_name, "");
 						}
 					}
 					callback(null, targetHomes, targetLayers, targetHomeGrids, targetUserEquipments, sentence);
@@ -125,7 +125,6 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 					param.targetHomeGrids = targetHomeGrids;
 					param.targetUserEquipments = targetUserEquipments;
 					param.commandSentence = commandSentence;
-
 					callback(null, param);
 				},
 
@@ -137,7 +136,7 @@ TargetAnalyzer.analyze = function(info, ret_callback, cb) {
 					var tempUserEquipments = param.targetUserEquipments;
 					var targetUserEquipments = [];
 					if(param.hasFiguredUeq) {
-
+						targetUserEquipments = tempUserEquipments;
 					} else {
 						/* 检查是否有设备类型 */
 						var keyTypes = [];

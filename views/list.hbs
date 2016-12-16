@@ -108,9 +108,9 @@
         </div>
         <div class="am-u-sm-12 am-u-md-3">
           <div class="am-input-group am-input-group-sm">
-            <input type="text" class="am-form-field" id="searchAction">
+            <input type="text" class="am-form-field" id="searchWord">
           <span class="am-input-group-btn">
-            <button class="am-btn am-btn-default" type="button" onclick='searchWords();'>搜索</button>
+            <button class="am-btn am-btn-default" type="button" onclick='searchWord();'>搜索</button>
           </span>
           </div>
         </div>
@@ -280,7 +280,7 @@ $.post("/getSubTypes", {type:searchType}, function(data) {
   $("#searchSubType").html(html);
   $("#searchSubType").val('{{searchSubType}}');
 });
-$("#searchAction").val("{{searchAction}}");
+$("#searchWord").val("{{searchWord}}");
 
 function changeType() {
   var type = $("#type").val();
@@ -423,7 +423,7 @@ function saveWord() {
   });
 }
 
-function searchWords() {
+function searchWord() {
   var searchType = $("#searchType").val();
   if(searchType === "__") {
     searchType = "";
@@ -432,8 +432,8 @@ function searchWords() {
   if(searchSubType === "__") {
     searchSubType = "";
   }
-  var searchAction = $("#searchAction").val();
-  window.location.href = "/list?type=" + searchType + "&subType=" + searchSubType + "&action=" + searchAction;
+  var searchWord = $("#searchWord").val();
+  window.location.href = "/list?type=" + searchType + "&subType=" + searchSubType + "&word=" + searchWord;
 }
 
 function removeWord(id) {

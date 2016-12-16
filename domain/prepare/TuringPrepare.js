@@ -39,6 +39,7 @@ TuringPrepare.prepare = function(info, ret_callback, cb) {
 			data.iscanlearn = true;
 			data.msg = body;
 			data.status = 'turing';
+			debug("实际返回:" + JSON.stringify(data));
 			ret_callback(ResponseUtil.resp(Code.OK, data));
 		}
 	});

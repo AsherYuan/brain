@@ -35,6 +35,9 @@ TVStatusHelper.calculate = function(newType) {
 			break;
 		}
 	}
+
+	/* 同步状态 */
+	d.status = ircodeBase.status;
 	ircodeBase.device = d;
 	if(ircodeBase.button === "T_MUTE") {
 		ircodeBase.mute = d.tv_ismute === "1" ? "0" : "1";

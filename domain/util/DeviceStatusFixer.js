@@ -9,7 +9,6 @@ var UserEquipmentModel = require("../../mongodb/models/UserEquipmentModel");
 var DeviceStatusFixer = module.exports;
 
 DeviceStatusFixer.fix = function(data) {
-	debug(JSON.stringify(data));
 	if(!!data && data.length > 0) {
 		for(var i=0;i<data.length;i++) {
 			var single = data[i];
@@ -31,6 +30,7 @@ DeviceStatusFixer.fix = function(data) {
 					}
 				});
 			} else if(device.e_type === "电灯") {
+				debug("电灯状态::" + JSON.stringify(single));
 				UserEquipmentModel.update({_id:new Object(device._id + "")}, {status:single.status}, function(err, updateInfo) {
 					if(err) {
 						debug(err);

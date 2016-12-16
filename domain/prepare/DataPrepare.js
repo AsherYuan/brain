@@ -15,13 +15,15 @@ var UserEquipmentModel = require("../../mongodb/models/UserEquipmentModel");
 var UserRequestModel = require("../../mongodb/models/UserRequestModel");
 var UserContextModel = require("../../mongodb/business/UserContextModel");
 
+/* 常量 */
+var BadWords = require("../const/BadWords");
+
 var DataPrepare = module.exports;
 
 // TODO 后续准备缓存化，同时考虑缓存数据的更新
 DataPrepare.prepare = function(info, ret_callback, cb) {
-	debug(info.sentence);
 	debug("开始准备数据准备流程:" + "____" + DateUtil.now());
-	if(!!info && info.userId) {
+	if(!!info && info.userId && !!info.sentence && info.sentence.length > 0) {
 		async.waterfall([
 			/* 关联用户信息 */
 			function(callback) {
@@ -106,6 +108,19 @@ DataPrepare.prepare = function(info, ret_callback, cb) {
 				});
 			},
 
+			/* 过滤无意义关键词 */
+			function(info, callback) {
+				var sentence = info.sentence;
+				/* 特殊情况，比如，其他阶段的分析出错，导致sentence为空 */
+				if(!!sentence && sentence.length > 0) {
+					for(var i in BadWords) {
+						sentence = sentence.replace(BadWords[i], "");
+					}
+					info.sentence = sentence;
+				}
+				callback(null, info);
+			},
+
 			/* 判断用户的文本是否属于回答 */
 			function(info, callback) {
 				var sentence = info.sentence;
@@ -120,11 +135,14 @@ DataPrepare.prepare = function(info, ret_callback, cb) {
 					addTime:{"$gte": now}
 				};
 				UserContextModel.findOne(param).sort({addTime:-1}).exec().then(function(context) {
+					debug(JSON.stringify(context));
+					debug("....................................................................");
 					if(!!context) {
 						var opList = JSON.parse(context.optionList);
 						var flag = false;
 						for(var i=0;i<opList.length;i++) {
 							var op = opList[i];
+							debug("op.name:" + op.name + "--------------------sentence:::" + sentence);
 							if(op.name === sentence) {
 								flag = true;
 							}
@@ -132,6 +150,11 @@ DataPrepare.prepare = function(info, ret_callback, cb) {
 
 						if(flag) {
 							info.contextId = context._id + "";
+							debug("info.contextId::" + info.contextId);
+							/* 更新本次的用户请求为回答，数据库打上标记 */
+							UserRequestModel.update({_id:new Object(info.inputstr_id)}, {$set:{isAnser:true}}, function(err, updateinfo) {
+								debug("更新本次的用户请求为回答完成");
+							});
 						}
 						callback(null, info);
 					} else {
@@ -156,6 +179,7 @@ DataPrepare.prepare = function(info, ret_callback, cb) {
 					}
 				}
 				info.sentence = sentence;
+				debug("电灯过程:" + info.sentence);
 				callback(null, info);
 			}
 		], function(err, info) {

@@ -11,6 +11,8 @@ LIStatusHelper.calculate = function(newType) {
 		status:null
 	};
 	var subTypes = newType.subTypes;
+	var hasStatus = false;
+	var status;
 	for(var subKey in subTypes) {
 		var actions = subTypes[subKey].actions;
 		for(var aKey in actions) {
@@ -23,9 +25,12 @@ LIStatusHelper.calculate = function(newType) {
 	for(var i=0;i<devices.length;i++) {
 		if(devices[i].e_type == "电灯") {
 			d = devices[i];
+			d.status = ircodeBase.status;
 			break;
 		}
 	}
+	/* 同步状态 */
+	d.status = ircodeBase.status;
 	ircodeBase.device = d;
 	return ircodeBase;
 };

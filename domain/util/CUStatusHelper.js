@@ -26,6 +26,8 @@ CUStatusHelper.calculate = function(newType) {
 			break;
 		}
 	}
+	/* 同步状态 */
+	d.status = ircodeBase.status;
 	ircodeBase.device = d;
 	return ircodeBase;
 };

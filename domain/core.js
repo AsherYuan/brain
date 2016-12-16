@@ -12,6 +12,9 @@ var WenzhiUtil = require("./util/WenzhiUtil");
 var TargetAnalyzer = require("./analyzer/TargetAnalyzer");
 var TargetLogicAnalyzer = require("./analyzer/TargetLogicAnalyzer");
 var ContextAnalyzer = require("./analyzer/ContextAnalyzer");
+var TvShowAnalyzer = require("./analyzer/TvShowAnalyzer");
+var UserPrivateAnalyzer = require("./analyzer/UserPrivateAnalyzer");
+var RepeatLastAnalyzer = require("./analyzer/RepeatLastAnalyzer");
 /* 数据准备器 */
 var DataPrepare = require("./prepare/DataPrepare");
 var ResponsePrepare = require("./prepare/ResponsePrepare");
@@ -27,6 +30,7 @@ Core.analyze = function(userId, words, contextId, ret_callback) {
 	debug("userId:" + userId);
 	debug("words:" + words);
 	debug("contextId:" + contextId);
+	words = words.replace("我是", "卧室");
 	var info = {
 		userId:userId,
 		words:words,
@@ -41,11 +45,16 @@ Core.analyze = function(userId, words, contextId, ret_callback) {
 			} else {
 				
 			}
-
 			callback(null, info, ret_callback);
 		},
+		/* 检查用户是否说的是重复上一次操作的相关问题 */
+		RepeatLastAnalyzer.analyze,
 		/* 开始准备数据 用户相关基础数据 整合到info对象中，以便于后续分析 */
 		DataPrepare.prepare,
+		/* 用户学习的独立库 */
+		UserPrivateAnalyzer.analyze,
+		/* 电视节目分析器 */
+		TvShowAnalyzer.analyze,
 		/* 目标设备分析器 */
 		TargetAnalyzer.analyze,
 		/* 目标设备逻辑分析 */

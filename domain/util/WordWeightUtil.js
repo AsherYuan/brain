@@ -15,10 +15,20 @@ var WordWeightUtil = module.exports;
 
 // 如果最后得分太低，需要根据设置的值，判断是否需要询问用户确认 比如50分以下，说明相关程度不高
 WordWeightUtil.mainType = function (word, cb) {
-	WordModel.find({word:word}, function(err, words) {
+	WordModel.find({}, function(err, words) {
 		if(err) {
 			cb(err);
 		} else {
+			/* 查找包含的文字 */
+			var temp = [];
+			for(var k in words) {
+				var wk = words[k];
+				if(word.indexOf(wk.word) > -1) {
+					temp.push(wk);
+				}
+			}
+			words = temp;
+debug("words::" + JSON.stringify(words));
 			if(!!words && words.length > 0) {
 				var types = {};
 				/* 累加数据 */
@@ -170,6 +180,16 @@ WordWeightUtil.subTypesForMulti = function(sentence, command, devices, cb) {
 						command = command.replace(words[i].word, "");
 					}
 				}
+				/* 找一模一样,但是子类别不一样的词 */
+				var xArray = [];
+				for(i=0;i<words.length;i++) {
+					for(j=0;j<tempWordsArray.length;j++) {
+						if(words[i].word === tempWordsArray[j].word && tempWordsArray[j].subType !== words[i].subType) {
+							xArray.push(words[i]);
+						}
+					}
+				}
+				tempWordsArray = tempWordsArray.concat(xArray);
 
 				/* 检查相同词汇的模式 */
 				var temp2 = [];
@@ -202,18 +222,19 @@ WordWeightUtil.subTypesForMulti = function(sentence, command, devices, cb) {
 
 				/* 查找句子中包含的 */
 
-				/* 过滤掉一模一样的单词，但是用于不同subTypes的，取分值高的 */
+				/* 过滤掉一模一样的单词，但是用于不同subTypes的，取分值高的, 如果同分的，保留 */
 				var filterMap = {};
 				var filterArray = [];
 				var filterHigh = 0;
 				for(i=0;i<words.length;i++) {
 					var word = words[i].word;
-					var type = words[i].type
-					if(!filterMap[word + type]) {
-						filterMap[word + type] = words[i];
+					var type = words[i].type;
+					var subType = words[i].subType;
+					if(!filterMap[word + type + subType]) {
+						filterMap[word + type + subType] = words[i];
 					} else {
-						if(words[i].subScore > filterMap[word + type].subScore) {
-							filterMap[word + type] = words[i];
+						if(words[i].subScore > filterMap[word + type + subType].subScore) {
+							filterMap[word + type + subType] = words[i];
 						}
 					}
 				}
@@ -222,7 +243,6 @@ WordWeightUtil.subTypesForMulti = function(sentence, command, devices, cb) {
 				}
 				words = filterArray;
 				/* 过滤完毕 */
-				debug("过滤完的:" + JSON.stringify(words));
 
 				for(i=0;i<words.length;i++) {
 					type = words[i].type;

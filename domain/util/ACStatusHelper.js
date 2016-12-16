@@ -46,14 +46,13 @@ ACStatusHelper.calculate = function(newType) {
 			break;
 		}
 	}
-	ircodeBase.device = d;
 
 	if(!ircodeBase.wind) {
 		ircodeBase.wind = d.ac_windspeed;
 	}
 
 	if(!ircodeBase.temperature) {
-		ircodeBase.temperature = d.ac_windspeed;
+		ircodeBase.temperature = d.ac_temperature;
 	}
 
 	if(!ircodeBase.mode) {
@@ -63,7 +62,6 @@ ACStatusHelper.calculate = function(newType) {
 	if(!ircodeBase.status) {
 		ircodeBase.status = d.status;
 	}
-
 	if(!!ircodeBase.tempContext) {
 		var wd = parseInt(ircodeBase.temperature) + parseInt(ircodeBase.tempContext);
 		if(wd > 30) {
@@ -73,6 +71,7 @@ ACStatusHelper.calculate = function(newType) {
 			wd = 16;
 		}
 		ircodeBase.temperature = wd;
+		d.ac_temperature = wd;
 	}
 
 	if(!!ircodeBase.windContext) {
@@ -84,8 +83,15 @@ ACStatusHelper.calculate = function(newType) {
 			fs = 0;
 		}
 		ircodeBase.wind = fs;
+		d.ac_windspeed = fs;
 	}
-
+	/* 同步状态 */
+	d.status = ircodeBase.status;
+	d.ac_windspeed = ircodeBase.wind;
+	d.ac_temperature = ircodeBase.temperature;
+	d.ac_model = ircodeBase.mode;
+	ircodeBase.device = d;
+	debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>" + JSON.stringify(ircodeBase.device));
 	ircodeBase = DefaultStatusHelper.getDefault(ircodeBase);
 	return ircodeBase;
 };

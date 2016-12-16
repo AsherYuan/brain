@@ -91,9 +91,9 @@ ResponsePrepare.prepare = function(info, ret_callback, cb) {
 							retData.iscanlearn = true;
 							retData.orderAndInfrared = orderAndInfrared;
 							retData.status = "success";
-
 							/* 修改设备的状态 */
 							DeviceStatusFixer.fix(d);
+							debug("最终返回数据:" + ResponseUtil.resp(Code.OK, retData));
 							ret_callback(ResponseUtil.resp(Code.OK, retData));
 						} else {
 							debug('没有分析出实际操作，准备进入图灵流程');

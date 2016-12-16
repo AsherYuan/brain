@@ -23,7 +23,7 @@ router.get("/list", function(req, res, next) {
 	var pageSize = req.query.pageSize;
 	var type = req.query.type;
 	var subType = req.query.subType;
-	var action = req.query.action;
+	var word = req.query.word;
 
 	if(page === "" || page === undefined) {
 		page = 1;
@@ -41,8 +41,8 @@ router.get("/list", function(req, res, next) {
 	if(subType !== "" && subType !== undefined) {
 		params.subType = subType;
 	}
-	if(action !== "" && action !== undefined) {
-		params.action = action;
+	if(word !== "" && word !== undefined) {
+		params.word = word;
 	}
 	console.log("params:" + params);
 	WordModel.find(params).limit(limit).skip(skip).sort({wordLength:-1, score:-1, subScore:-1}).exec().then(function(list) {
@@ -90,7 +90,7 @@ router.get("/list", function(req, res, next) {
 			}
 			data.searchType = type;
 			data.searchSubType = subType;
-			data.searchAction = action;
+			data.searchWord = word;
 			res.render('list', data);
 		});
 	}).catch(function(err) {

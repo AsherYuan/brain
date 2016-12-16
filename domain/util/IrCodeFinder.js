@@ -127,6 +127,7 @@ IrcodeFinder.find = function(devices, types, cb) {
 			for(key_type in newTypes) {
 				if(key_type === "空调") {
 					ircodeBase = ACStatusHelper.calculate(newTypes[key_type]);
+					debug(JSON.stringify(ircodeBase));
 					ircodeBases.push(ircodeBase);
 				} else if(key_type === "电视") {
 					ircodeBase = TVStatusHelper.calculate(newTypes[key_type]);
@@ -151,10 +152,13 @@ IrcodeFinder.find = function(devices, types, cb) {
 	            	var param = {};
 	            	if(ib.device.e_type === "空调") {
 	            		param.status = ib.status;
-	            		param.model = ib.mode;
-	            		param.type = "基础";
-	            		param.ac_windspeed = ib.wind;
-	            		param.ac_temperature = ib.temperature;
+	            		if(param.status === "开") {
+	            			param.model = ib.mode;
+		            		param.type = "基础";
+		            		param.ac_windspeed = ib.wind;
+		            		param.ac_temperature = ib.temperature;
+	            		}
+	            		
 	            		CACModel.findOne(param, function(err, result) {
 	            			if(err) {
 	            				debug(err);
@@ -186,14 +190,12 @@ IrcodeFinder.find = function(devices, types, cb) {
 	            			param.inst = ib.button;
 	            		}
 
-	            		debug("电视的查找参数" + JSON.stringify(param));
 	            		CTVModel.findOne(param, function(err, result) {
 	            			if(err) {
 	            				debug(err);
 	            				reject(err);
 	            			} else {
 	            				ib.ctv = result;
-	            				debug("电视的查找ctv" + JSON.stringify(ib));
 	            				var middleParam = {
 	            					typeName:ib.device.typeName,
 	            					devType:ib.device.e_type,
@@ -218,14 +220,12 @@ IrcodeFinder.find = function(devices, types, cb) {
 	            			param.status = ib.status;
 	            		}
 	            		
-	            		debug("电灯的查找参数" + JSON.stringify(param));
 	            		COtherModel.findOne(param, function(err, result) {
 	            			if(err) {
 	            				debug(err);
 	            				reject(err);
 	            			} else {
 	            				ib.cother = result;
-	            				debug("电灯的查找cother" + JSON.stringify(ib));
 	            				var middleParam = {
 	            					typeName:ib.device.typeName,
 	            					devType:ib.device.e_type,
@@ -250,14 +250,12 @@ IrcodeFinder.find = function(devices, types, cb) {
 	            			param.status = ib.status;
 	            		}
 	            		
-	            		debug("窗帘的查找参数" + JSON.stringify(param));
 	            		COtherModel.findOne(param, function(err, result) {
 	            			if(err) {
 	            				debug(err);
 	            				reject(err);
 	            			} else {
 	            				ib.cother = result;
-	            				debug("窗帘的查找cother" + JSON.stringify(ib));
 	            				var middleParam = {
 	            					typeName:ib.device.typeName,
 	            					devType:ib.device.e_type,
@@ -282,6 +280,7 @@ IrcodeFinder.find = function(devices, types, cb) {
 	            toRandering.push(render(irs[i]));
 	        }
 	        Promise.all(toRandering).then(function(ircodes) {
+	        	debug("ircodes:::" + JSON.stringify(ircodes)); 
 	            callback(null, ircodes);
 	        });
 		},
