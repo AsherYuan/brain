@@ -14,6 +14,7 @@ var HomeGridModel = require("../../mongodb/models/HomeGridModel");
 var UserEquipmentModel = require("../../mongodb/models/UserEquipmentModel");
 var UserRequestModel = require("../../mongodb/models/UserRequestModel");
 var UserContextModel = require("../../mongodb/business/UserContextModel");
+var AllChecker = require("../util/AllChecker");
 
 /* 常量 */
 var BadWords = require("../const/BadWords");
@@ -180,6 +181,12 @@ DataPrepare.prepare = function(info, ret_callback, cb) {
 				}
 				info.sentence = sentence;
 				debug("电灯过程:" + info.sentence);
+				callback(null, info);
+			},
+
+			/* 判断是否要同时操作 */
+			function(info, callback) {
+				info = AllChecker.check(info);
 				callback(null, info);
 			}
 		], function(err, info) {

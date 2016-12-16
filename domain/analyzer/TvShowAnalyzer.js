@@ -69,7 +69,7 @@ TvShowAnalyzer.analyze = function(info, ret_callback, cb) {
 
 				/* 发送红外码 */
 				function(target, info, callback) {
-					if(target.channelNum) {
+					if(!!target && !!target.channelNum) {
 						debug("channelNum:" + target.channelNum);
 						var channelNum = parseInt(target.channelNum);
 						var hundred = 0;

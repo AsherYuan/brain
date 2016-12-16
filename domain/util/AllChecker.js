@@ -5,35 +5,21 @@ var debug = require('debug')('express:brain-util-AllChecker');
 
 var AllChecker = module.exports;
 
-var flagWords = ["全部", '全', ''];
+var flagWords = ['所有', "全部", '全都', '全', '都'];
 
 /* 后续要考虑这里设备状态如果多个，并且是不同品牌的问题, 但是在同一个语句中同时出现时，怎么合并状态的问题 */
 AllChecker.check = function(info) {
 	var isAll;
-	/* 范围分成4个阶段，用户，家庭，楼层，房间 */
-	var scope;
-
+	
 	var sentence = info.sentence;
-	var homes = info.homes;
-	var layers = info.layers;
-	var grids = info.homeGrids;
-
-	var i,j,k;
-
-	var isHome = false;
-	var isLayer = false;
-	var isGrid = false;
-
-	/* 循环查看家庭里是否有符合 */
-	for(i=0;i<homes.length;i++) {
-		var home = homes[i];
-
+	for(var i=0;i<flagWords.length;i++) {
+		if(sentence.indexOf(flagWords[i]) > -1) {
+			isAll = true;
+			sentence = sentence.replace(flagWords[i], "");
+		}
 	}
-
-
-	var param = {
-		isAll:isAll,
-		scope:score
-	}
-	return param;
+	info.sentence = sentence;
+	info.isAll = isAll;
+	debug("全部操作检查结果::isAll::" + isAll + "____" + info.sentence);
+	return info;
 };

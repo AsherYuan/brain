@@ -21,16 +21,16 @@ LIStatusHelper.calculate = function(newType) {
 			}
 		}
 	}
-	var d;
+	var newDevices = [];
 	for(var i=0;i<devices.length;i++) {
 		if(devices[i].e_type == "电灯") {
-			d = devices[i];
+			var d = devices[i];
+			/* 同步状态 */
 			d.status = ircodeBase.status;
-			break;
+			newDevices.push(d);
 		}
 	}
-	/* 同步状态 */
-	d.status = ircodeBase.status;
-	ircodeBase.device = d;
+	ircodeBase.device = newDevices;
+	debug(JSON.stringify(ircodeBase));
 	return ircodeBase;
 };

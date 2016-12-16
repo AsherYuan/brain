@@ -150,128 +150,134 @@ IrcodeFinder.find = function(devices, types, cb) {
 			var render = function(ib) {
 	            return new Promise(function(resolve, reject) {
 	            	var param = {};
-	            	if(ib.device.e_type === "空调") {
-	            		param.status = ib.status;
-	            		if(param.status === "开") {
-	            			param.model = ib.mode;
-		            		param.type = "基础";
-		            		param.ac_windspeed = ib.wind;
-		            		param.ac_temperature = ib.temperature;
-	            		}
-	            		
-	            		CACModel.findOne(param, function(err, result) {
-	            			if(err) {
-	            				debug(err);
-	            				reject(err);
-	            			} else {
-	            				ib.cac = result;
-	            				var middleParam = {
-	            					typeName:ib.device.typeName,
-	            					devType:ib.device.e_type,
-	            					brand:ib.device.pingpai
-	            				}
-	            				RDeviceModel.findOne(middleParam, function(err, rdevice) {
-	            					if(err) {
-	            						debug(err);
-	            						reject(err);
-	            					} else {
-	            						ib.rdevice = rdevice;
-	            						resolve(ib);
-	            					}
-	            				});
-	            			}
-	            		});
-	            	} else if(ib.device.e_type === "电视") {
-	            		param = {};
-	            		if(!!ib.status) {
-	            			param.status = ib.status;
-	            		}
-	            		if(!!ib.button) {
-	            			param.inst = ib.button;
-	            		}
+	            	if(ib.device.length > 0) {
+	            		var newDevice = ib.device[0];
+						if(newDevice.e_type === "电灯") {
+		            		param = {
+		            			type:"电灯"
+		            		};
+		            		if(!!ib.status) {
+		            			param.status = ib.status;
+		            		}
+		            		
+		            		COtherModel.findOne(param, function(err, result) {
+		            			if(err) {
+		            				debug(err);
+		            				reject(err);
+		            			} else {
+		            				ib.cother = result;
+		            				var middleParam = {
+		            					typeName:newDevice.typeName,
+		            					devType:newDevice.e_type,
+		            					brand:newDevice.pingpai
+		            				}
+		            				RDeviceModel.findOne(middleParam, function(err, rdevice) {
+		            					if(err) {
+		            						debug(err);
+		            						reject(err);
+		            					} else {
+		            						ib.rdevice = rdevice;
+		            						debug(JSON.stringify(ib));
+		            						resolve(ib);
+		            					}
+		            				});
+		            			}
+		            		});
+		            	} else if(newDevice.e_type === "窗帘") {
+		            		param = {
+		            			type:"窗帘"
+		            		};
+		            		if(!!ib.status) {
+		            			param.status = ib.status;
+		            		}
+		            		
+		            		COtherModel.findOne(param, function(err, result) {
+		            			if(err) {
+		            				debug(err);
+		            				reject(err);
+		            			} else {
+		            				ib.cother = result;
+		            				var middleParam = {
+		            					typeName:newDevice.typeName,
+		            					devType:newDevice.e_type,
+		            					brand:newDevice.pingpai
+		            				}
+		            				RDeviceModel.findOne(middleParam, function(err, rdevice) {
+		            					if(err) {
+		            						debug(err);
+		            						reject(err);
+		            					} else {
+		            						ib.rdevice = rdevice;
+		            						resolve(ib);
+		            					}
+		            				});
+		            			}
+		            		});
+		            	}
+	            	} else {
+	            		if(ib.device.e_type === "空调") {
+		            		param.status = ib.status;
+		            		if(param.status === "开") {
+		            			param.model = ib.mode;
+			            		param.type = "基础";
+			            		param.ac_windspeed = ib.wind;
+			            		param.ac_temperature = ib.temperature;
+		            		}
+		            		
+		            		CACModel.findOne(param, function(err, result) {
+		            			if(err) {
+		            				debug(err);
+		            				reject(err);
+		            			} else {
+		            				ib.cac = result;
+		            				var middleParam = {
+		            					typeName:ib.device.typeName,
+		            					devType:ib.device.e_type,
+		            					brand:ib.device.pingpai
+		            				}
+		            				RDeviceModel.findOne(middleParam, function(err, rdevice) {
+		            					if(err) {
+		            						debug(err);
+		            						reject(err);
+		            					} else {
+		            						ib.rdevice = rdevice;
+		            						resolve(ib);
+		            					}
+		            				});
+		            			}
+		            		});
+		            	} else if(ib.device.e_type === "电视") {
+		            		param = {};
+		            		if(!!ib.status) {
+		            			param.status = ib.status;
+		            		}
+		            		if(!!ib.button) {
+		            			param.inst = ib.button;
+		            		}
 
-	            		CTVModel.findOne(param, function(err, result) {
-	            			if(err) {
-	            				debug(err);
-	            				reject(err);
-	            			} else {
-	            				ib.ctv = result;
-	            				var middleParam = {
-	            					typeName:ib.device.typeName,
-	            					devType:ib.device.e_type,
-	            					brand:ib.device.pingpai
-	            				}
-	            				RDeviceModel.findOne(middleParam, function(err, rdevice) {
-	            					if(err) {
-	            						debug(err);
-	            						reject(err);
-	            					} else {
-	            						ib.rdevice = rdevice;
-	            						resolve(ib);
-	            					}
-	            				});
-	            			}
-	            		});
-	            	} else if(ib.device.e_type === "电灯") {
-	            		param = {
-	            			type:"电灯"
-	            		};
-	            		if(!!ib.status) {
-	            			param.status = ib.status;
-	            		}
-	            		
-	            		COtherModel.findOne(param, function(err, result) {
-	            			if(err) {
-	            				debug(err);
-	            				reject(err);
-	            			} else {
-	            				ib.cother = result;
-	            				var middleParam = {
-	            					typeName:ib.device.typeName,
-	            					devType:ib.device.e_type,
-	            					brand:ib.device.pingpai
-	            				}
-	            				RDeviceModel.findOne(middleParam, function(err, rdevice) {
-	            					if(err) {
-	            						debug(err);
-	            						reject(err);
-	            					} else {
-	            						ib.rdevice = rdevice;
-	            						resolve(ib);
-	            					}
-	            				});
-	            			}
-	            		});
-	            	} else if(ib.device.e_type === "窗帘") {
-	            		param = {
-	            			type:"窗帘"
-	            		};
-	            		if(!!ib.status) {
-	            			param.status = ib.status;
-	            		}
-	            		
-	            		COtherModel.findOne(param, function(err, result) {
-	            			if(err) {
-	            				debug(err);
-	            				reject(err);
-	            			} else {
-	            				ib.cother = result;
-	            				var middleParam = {
-	            					typeName:ib.device.typeName,
-	            					devType:ib.device.e_type,
-	            					brand:ib.device.pingpai
-	            				}
-	            				RDeviceModel.findOne(middleParam, function(err, rdevice) {
-	            					if(err) {
-	            						debug(err);
-	            						reject(err);
-	            					} else {
-	            						ib.rdevice = rdevice;
-	            						resolve(ib);
-	            					}
-	            				});
-	            			}
-	            		});
+		            		CTVModel.findOne(param, function(err, result) {
+		            			if(err) {
+		            				debug(err);
+		            				reject(err);
+		            			} else {
+		            				ib.ctv = result;
+		            				var middleParam = {
+		            					typeName:ib.device.typeName,
+		            					devType:ib.device.e_type,
+		            					brand:ib.device.pingpai
+		            				}
+		            				RDeviceModel.findOne(middleParam, function(err, rdevice) {
+		            					if(err) {
+		            						debug(err);
+		            						reject(err);
+		            					} else {
+		            						ib.rdevice = rdevice;
+		            						resolve(ib);
+		            					}
+		            				});
+		            			}
+		            		});
+		            	}
 	            	}
 	            });
 	        };
@@ -289,7 +295,12 @@ IrcodeFinder.find = function(devices, types, cb) {
 		function(ircodes, callback) {
 			var render = function(ir) {
 	            return new Promise(function(resolve, reject) {
-	            	var e_type = ir.device.e_type;
+	            	var e_type;
+	            	if(ir.device.length > 0) {
+	            		e_type = ir.device[0].e_type;
+	            	} else {
+	            		e_type = ir.device.e_type;
+	            	}
 	            	var typeID = ir.rdevice.typeID;
 	            	var inst;
 	            	if(e_type === "空调") {

@@ -110,67 +110,68 @@ TargetLogicAnalyzer.analyze = function(info, ret_callback, cb) {
 						}
 					}
 				}
-				debug("---------------------------------" + JSON.stringify(optionHomeGrids));
-				debug(optionHomeGrids.length > 1);
 				if(optionHomeGrids.length > 1) {
 					info.optionHomeGrids = optionHomeGrids;
-					// 如果是之前回答过，取前一次的答案
-					debug("xxxxxx::" + JSON.stringify(info.optionHomeGrids));
-					UserContextModel.findOne({userMobile:info.user.mobile, answered:true, answer:{$ne:'ignore'}}).sort({answerTime:-1}).exec().then(function(uc) {
-						debug("uc::" + JSON.stringify(uc));
-						if(!!uc) {
-							var between = DateUtil.diff(new Date(), uc.answerTime);
-							debug("between:" + between);
-							/* !!!!!!!!!! */
-							/* 10分钟内有回答, 认为是同一类操作, 检查之前的答案 */
-							if(between < 30) {
-								debug("之前的回答:" + uc.answer);
-								var autoOption;
-								for(var an=0;an<optionHomeGrids.length;an++) {
-									/* 如果本次的选项中，出现了前置的答案 */
-									if(optionHomeGrids[an].name === uc.answer) {
-										autoOption = optionHomeGrids[an];
-										break;
-									}
-								}
-								if(!!autoOption) {
-									var newList = [];
-									newList.push(autoOption);
-									debug("用户十分钟之前回答过这个问题，所以自动选择" + autoOption.name);
-									debug(JSON.stringify(info.optionHomeGrids));
-									debug(JSON.stringify(newList));
-									info.optionHomeGrids = newList;
-
-									/* 因为只有一个房间, 自动过滤原来的目标设备列表 */
-									if(info.optionHomeGrids.length === 1) {
-										var targetNew = [];
-										for(var k_target in info.targetUserEquipments) {
-											debug('info.targetUserEquipments[k_target].homeGridId:' + info.targetUserEquipments[k_target].homeGridId);
-											debug('info.optionHomeGrids._id::' + info.optionHomeGrids[0]._id + "")
-											if(info.targetUserEquipments[k_target].homeGridId === info.optionHomeGrids[0]._id + "") {
-												targetNew.push(info.targetUserEquipments[k_target]);
-											}
+					/* 如果用户是全部性的操作，返回用户两个设备 */
+					debug("info.isAll===true:" + (info.isAll === true));
+					if(info.isAll === true) {
+						callback(null, false, info);
+					} else {
+						// 如果是之前回答过，取前一次的答案
+						UserContextModel.findOne({userMobile:info.user.mobile, answered:true, answer:{$ne:'ignore'}}).sort({answerTime:-1}).exec().then(function(uc) {
+							if(!!uc) {
+								var between = DateUtil.diff(new Date(), uc.answerTime);
+								/* !!!!!!!!!! */
+								/* 10分钟内有回答, 认为是同一类操作, 检查之前的答案 */
+								if(between < 30) {
+									debug("之前的回答:" + uc.answer);
+									var autoOption;
+									for(var an=0;an<optionHomeGrids.length;an++) {
+										/* 如果本次的选项中，出现了前置的答案 */
+										if(optionHomeGrids[an].name === uc.answer) {
+											autoOption = optionHomeGrids[an];
+											break;
 										}
-										debug("targetNew:::" + JSON.stringify(targetNew));
-										info.targetUserEquipments = targetNew;
 									}
+									if(!!autoOption) {
+										var newList = [];
+										newList.push(autoOption);
+										debug("用户十分钟之前回答过这个问题，所以自动选择" + autoOption.name);
+										debug(JSON.stringify(info.optionHomeGrids));
+										debug(JSON.stringify(newList));
+										info.optionHomeGrids = newList;
 
-									callback(null, false, info);
+										/* 因为只有一个房间, 自动过滤原来的目标设备列表 */
+										if(info.optionHomeGrids.length === 1) {
+											var targetNew = [];
+											for(var k_target in info.targetUserEquipments) {
+												debug('info.targetUserEquipments[k_target].homeGridId:' + info.targetUserEquipments[k_target].homeGridId);
+												debug('info.optionHomeGrids._id::' + info.optionHomeGrids[0]._id + "")
+												if(info.targetUserEquipments[k_target].homeGridId === info.optionHomeGrids[0]._id + "") {
+													targetNew.push(info.targetUserEquipments[k_target]);
+												}
+											}
+											debug("targetNew:::" + JSON.stringify(targetNew));
+											info.targetUserEquipments = targetNew;
+										}
+
+										callback(null, false, info);
+									} else {
+										callback(null, true, info);
+									}
 								} else {
+									/* 用户最近10分钟内没有操作，检查用户3分钟内，是否操作过某个房间内的电器 */
+									// TODO
 									callback(null, true, info);
 								}
 							} else {
-								/* 用户最近10分钟内没有操作，检查用户3分钟内，是否操作过某个房间内的电器 */
-								// TODO
 								callback(null, true, info);
 							}
-						} else {
+						}).catch(function(err) {
+							debug(err);
 							callback(null, true, info);
-						}
-					}).catch(function(err) {
-						debug(err);
-						callback(null, true, info);
-					});
+						});
+					}
 				} else {
 					callback(null, false, info);
 				}

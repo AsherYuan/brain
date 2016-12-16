@@ -20,7 +20,7 @@ ResponsePrepare.prepare = function(info, ret_callback, cb) {
 	debug("开始准备响应准备流程:" + "____" + DateUtil.now());
 	/* 之后还要考虑用户状态跟着走 TODO */
 	/* 如果有多个选项，则询问用户，否则进入命令执行阶段 */
-	if(info.optionHomeGrids && info.optionHomeGrids.length > 1) {
+	if(info.optionHomeGrids && info.optionHomeGrids.length > 1 && info.isAll !== true) {
 		var optionList = [];
 		var msg = "请选择哪个位置的设备:";
 		for(var i=0;i<info.optionHomeGrids.length;i++) {
@@ -82,7 +82,6 @@ ResponsePrepare.prepare = function(info, ret_callback, cb) {
 								single.infrared = d_infrared;
 								orderAndInfrared.push(single);
 							}
-
 							var retData = {};
 							retData.delayDesc = "";
 							retData.delayOrder = false;
