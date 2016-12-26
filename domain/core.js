@@ -15,10 +15,14 @@ var ContextAnalyzer = require("./analyzer/ContextAnalyzer");
 var TvShowAnalyzer = require("./analyzer/TvShowAnalyzer");
 var UserPrivateAnalyzer = require("./analyzer/UserPrivateAnalyzer");
 var RepeatLastAnalyzer = require("./analyzer/RepeatLastAnalyzer");
+var RemoteControlAnalyzer = require("./analyzer/RemoteControlAnalyzer");
 /* 数据准备器 */
 var DataPrepare = require("./prepare/DataPrepare");
 var ResponsePrepare = require("./prepare/ResponsePrepare");
 var TuringPrepare = require("./prepare/TuringPrepare");
+
+/* 学习管理器 */
+var StudyAnalyzer = require('./analyzer/StudyAnalyzer');
 
 /* 工具类 */
 var DateUtil = require("./util/DateUtil");
@@ -68,5 +72,18 @@ Core.analyze = function(userId, words, contextId, ret_callback) {
 	], function (err, result) {
 		// debug("流程结束最终返回结果:" + JSON.stringify(result) + "____" + DateUtil.now());
 	   	ret_callback(result);
+	});
+};
+
+/* 新版本学习 */
+Core.study = function(devicesString, user_id, inputstr_id, ret_callback) {
+	StudyAnalyzer.analyzer(devicesString, user_id, inputstr_id, function(err, result) {
+		ret_callback(result);
+	});
+};
+
+Core.remoteControl = function(user_id, deviceId, deviceType, status, model, ac_windspeed, ac_temperature, chg_chn, chg_voice, inst, ret_callback) {
+	StudyAnalyzer.remoteControl(user_id, deviceId, deviceType, status, model, ac_windspeed, ac_temperature, chg_chn, chg_voice, inst, function(err, result) {
+		ret_callback(result);
 	});
 };

@@ -17,6 +17,43 @@ router.post('/say', function(req, res, next) {
 	});
 });
 
+/* 学习模块 */
+router.post('/remoteControl', function(req, res, next) {
+	var user_id = req.body.user_id;
+	var deviceId = req.body.deviceId;
+	var deviceType = req.body.deviceType;
+	var status = req.body.status;
+	var model = req.body.model;
+	var ac_windspeed = req.body.ac_windspeed;
+	var ac_temperature = req.body.ac_temperature;
+	var chg_chn = req.body.chg_chn;
+	var chg_voice = req.body.chg_voice;
+	var inst = req.body.inst;
+
+	core.remoteControl(user_id, deviceId, deviceType, status, model, ac_windspeed, ac_temperature, chg_chn, chg_voice, inst, function(ret) {
+		res.send(ret);
+	});
+});
+
+/* 学习模块 */
+// router.post('/study', function(req, res, next) {
+// 	var learnParam = req.body.learnParam;
+// 	core.study(learnParam, function(ret) {
+// 		res.send(ret);
+// 	});
+// });
+
+/* 新版学习模式 */
+router.post("/study", function(req, res, next) {
+	var devicesString = req.body.devicesString;
+	var user_id = req.body.user_id;
+	var inputstr_id = req.body.inputstr_id;
+
+	core.study(devicesString, user_id, inputstr_id, function(ret) {
+		res.send(ret);
+	});
+});
+
 /* 文字编辑模块 */
 router.get("/list", function(req, res, next) {
 	var page = req.query.page;
