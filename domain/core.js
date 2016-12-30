@@ -82,8 +82,8 @@ Core.study = function(devicesString, user_id, inputstr_id, ret_callback) {
 	});
 };
 
-// Core.remoteControl = function(user_id, deviceId, deviceType, status, model, ac_windspeed, ac_temperature, chg_chn, chg_voice, inst, ret_callback) {
-// 	RemoteControlAnalyzer.remoteControl(user_id, deviceId, deviceType, status, model, ac_windspeed, ac_temperature, chg_chn, chg_voice, inst, function(err, result) {
-// 		ret_callback(result);
-// 	});
-// };
+Core.remoteControl = function(user_id, deviceId, deviceType, status, model, ac_windspeed, ac_temperature, chg_chn, chg_voice, inst, ret_callback) {
+	RemoteControlAnalyzer.remoteControl(user_id, deviceId, deviceType, status, model, ac_windspeed, ac_temperature, chg_chn, chg_voice, inst, function(err, result) {
+		ret_callback(result);
+	});
+};
