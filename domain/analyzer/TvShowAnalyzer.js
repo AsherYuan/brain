@@ -10,6 +10,7 @@ var WordWeightUtil = require("../util/WordWeightUtil");
 
 /* 数据库 */
 var TvChannelModel = require("../../mongodb/tv/TvChannelModel");
+var TvProgramModel = require("../../mongodb/tv/TvProgramModel");
 var UserEquipmentModel = require("../../mongodb/models/UserEquipmentModel");
 var RDeviceModel = require("../../mongodb/models/RDeviceModel");
 var RinfraredModel = require("../../mongodb/models/RinfraredModel");
@@ -63,7 +64,33 @@ TvShowAnalyzer.analyze = function(info, ret_callback, cb) {
 						callback(null, target, info);
 					} else {
 						// TODO 查找电视节目
-						callback(null, target, info);
+						var leftWords = info.sentence.replace("我要看", "");
+						var now = new Date();
+						TvProgramModel.find({$and:[{beginTime:{$lt:now}}, {endTime:{$gt:now}}]}, function(err, programs) {
+							if(err) {
+								callback(err);
+							} else {
+								var tp;
+								if(!!programs && programs.length > 0) {
+									for(var i=0;i<programs.length;i++) {
+										var p = programs[i];
+										if(p.program.indexOf(leftWords) > -1) {
+											tp = p;
+										}
+									}
+									// TODO 存在多个的情况
+									if(!!tp) {
+										TvChannelModel.findById(tp.channelId, function(terr, channel) {
+											callback(null, channel, info);
+										});
+									} else {
+										callback(null, target, info);
+									}
+								} else {
+									callback(null, target, info);
+								}
+							}
+						});
 					}
 				}, 
 
@@ -93,7 +120,7 @@ TvShowAnalyzer.analyze = function(info, ret_callback, cb) {
 						buttons.push("T_D" + one);
 
 
-						UserEquipmentModel.findById('5833d9fd015566d5a334b8be', function(err, ueq) {
+						UserEquipmentModel.findById('586601de887b1945e182e186', function(err, ueq) {
 							if(err) {
 								debug(err);
 								callback(null, info);
@@ -237,7 +264,7 @@ TvShowAnalyzer.analyze = function(info, ret_callback, cb) {
 							}
 						});	
 					} else {
-
+						callback(null, null, info);
 					}
 				},
 
@@ -255,7 +282,16 @@ TvShowAnalyzer.analyze = function(info, ret_callback, cb) {
 
 						ret_callback(ResponseUtil.resp(Code.OK, data));
 					} else {
-						callback(null, info);
+						data = {};
+						data.delayDesc = "";
+						data.delayOrder = false;
+						data.inputstr = "暂时没有电视台在播放您要看的节目";
+						data.inputstr_id = info.inputstr_id;
+						data.iscanlearn = false;
+						data.status = "success";
+						data.orderAndInfrared = irs;
+
+						ret_callback(ResponseUtil.resp(Code.OK, data));
 					}
 				}
 			], function(err, info) {
