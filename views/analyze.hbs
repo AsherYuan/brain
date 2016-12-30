@@ -1,0 +1,127 @@
+<div class="admin-content-body">
+	<div class="am-cf am-padding am-padding-bottom-0">
+		<div class="am-fl am-cf"><strong class="am-text-primary am-text-lg">分析</strong> / <small>分析</small></div>
+	</div>
+	<hr>
+	<div class="am-g">
+		<div class="am-u-sm-12 am-u-md-3">
+  			<div class="am-btn-toolbar">
+    			<div class="am-btn-group am-btn-group-xs"></div>
+  			</div>
+		</div>
+		<div class="am-u-sm-12 am-u-md-9">
+  			<div class="am-input-group am-input-group-sm">
+    			<input type="text" class="am-form-field" id="searchSentence" placeholder="请输入要分析的文本" value="{{searchSentence}}">
+  				<span class="am-input-group-btn">
+    				<button class="am-btn am-btn-default" type="button" onclick='searchSentence();'>搜索</button>
+  				</span>
+  			</div>
+		</div>
+	</div>
+
+	<div class="am-g">
+		<div class="am-u-sm-12">
+			<div id="container"></div>
+		</div>
+	</div>
+
+	<div class="am-g">
+		<div class="am-u-sm-12">
+			<div id="containerSentence"></div>
+		</div>
+	</div>
+{{#if results}}
+	<div class="am-g">
+		<button type="button" class="am-btn am-btn-primary am-btn-block" onclick="toTrainning('{{searchSentence}}');">开始训练</button>
+	</div>
+{{/if}}
+</div>
+
+<!--[if lt IE 9]>
+<script src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
+<script src="http://cdn.staticfile.org/modernizr/2.8.3/modernizr.js"></script>
+<script src="assets/js/amazeui.ie8polyfill.min.js"></script>
+<![endif]-->
+
+<!--[if (gte IE 9)|!(IE)]><!-->
+<script src="/assets/js/jquery.min.js"></script>
+<!--<![endif]-->
+<script src="/assets/js/amazeui.min.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/javascripts/highcharts/highcharts.js"></script>
+<script src="/javascripts/highcharts/highcharts-3d.js"></script>
+<script src="/javascripts/highcharts/modules/drilldown.js"></script>
+<script>
+$(function() {
+	{{#if results}}
+		Highcharts.chart('container', {
+	        chart: {
+	            type: 'pie'
+	        },
+	        title: {
+	            text: '{{searchSentence}}的语义分析饼图'
+	        },
+	        exporting:{
+	        	enabled:false
+	        },
+	        tooltip: {
+	            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+	        },
+	        plotOptions: {
+	            pie: {
+	                allowPointSelect: false,
+	                cursor: 'pointer',
+	                dataLabels: {
+	                    enabled: true,
+	                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+	                    style: {
+	                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+	                    }
+	                },
+	                showInLegend: true
+	            }
+	        },
+	        series: [{
+	            name: '成分比例',
+	            colorByPoint: true,
+	            data: [
+					{{#each results}}
+						{
+		            		name:'{{@key}}',
+		            		y:{{this.total}},
+		            		drilldown:'{{@key}}',
+						},
+		            {{/each}}
+	            ]
+	        }],
+	        drilldown: {
+	        	series: [
+	        		{{#each results}}
+						{
+		            		name:'{{@key}}',
+		            		id:'{{@key}}',
+		            		data:[
+		            			{{#each this.subTypes}}
+		            				{{#if this.total}}
+		            					['{{@key}}', {{this.total}}],
+		            				{{/if}}
+		            			{{/each}}
+		            		]
+						},
+		            {{/each}}
+	        	]
+	        }
+	    });
+
+    {{/if}}
+});
+
+function searchSentence() {
+	var searchSentence = $("#searchSentence").val();
+	window.location.href = "/analyze?searchSentence=" + searchSentence;
+}
+
+function toTrainning(searchSentence) {
+	window.location.href = "/tranning_wordlist?sentence=" + searchSentence;
+}
+</script>

@@ -3,6 +3,10 @@ var core = require('../domain/core');
 
 /* 数据库 */
 var WordModel = require("../mongodb/models/WordModel");
+var UserTrainingModel = require("../mongodb/business/UserTrainingModel");
+var debug = require('debug')('express:brain-routes-index');
+
+/* 静态数据 */
 var TypeAndSubTypes = require("../domain/const/TypeAndSubTypes");
 
 var router = express.Router();
@@ -54,6 +58,177 @@ router.post("/study", function(req, res, next) {
 	});
 });
 
+/************************************** 以下为管理界面 *******************************************************/
+router.get("/analyze", function(req, res, next) {
+	var searchSentence = req.query.searchSentence;
+	var sentence = searchSentence;
+
+	if(!!sentence) {
+		WordModel.find({}, function(err, words) {
+			if(err) {
+				debug("/analyze:" + err);
+			} else {
+				/* 定义结构 */
+				var results = {};
+				for(var topKey in TypeAndSubTypes) {
+					var top = TypeAndSubTypes[topKey];
+					results[topKey] = {};
+					results[topKey].total = 0;
+					results[topKey].average = 0;
+					results[topKey].subTypes = {};
+					results[topKey].words = [];
+				}
+				for(topKey in TypeAndSubTypes) {
+					for(var subKey in TypeAndSubTypes[topKey]) {
+						results[topKey].subTypes[subKey] = {};
+						results[topKey].subTypes[subKey].total = 0;
+						results[topKey].subTypes[subKey].average = 0;
+						results[topKey].subTypes[subKey].words = [];
+					}
+				}
+
+				/* 提前过滤数据，只处理句子中有包含的数据 */
+				var temp = [];
+				for(var k in words) {
+					var wk = words[k];
+					if(sentence.indexOf(wk.word) > -1) {
+						temp.push(wk);
+					}
+				}
+				words = temp;
+				
+				/* 分解数据 */
+				for(var i=0;i<words.length;i++) {
+					var w = words[i];
+					results[w.type].total += w.score;
+					results[w.type].words.push(w);
+					results[w.type].average = Math.round(results[w.type].total / results[w.type].words.length);
+				}
+				/* 子类别再处理 */
+				for(topKey in results) {
+					var totalWords = results[topKey].words;
+					for(i=0;i<totalWords.length;i++) {
+						var sw = totalWords[i];
+						if(sw.subScore > 0) {
+							results[topKey].subTypes[sw.subType].total += sw.subScore;
+							results[topKey].subTypes[sw.subType].words.push(sw);
+							results[topKey].subTypes[sw.subType].average = Math.round(results[topKey].subTypes[sw.subType].total / results[topKey].subTypes[sw.subType].words.length);
+						}
+					}
+				}
+				res.render('analyze', {results:results, searchSentence:searchSentence});
+			}
+		});
+	} else {
+		res.render('analyze');
+	}
+});
+
+/* 单个词汇分析 */
+router.post("/analyze_word", function(req, res, next) {
+	var word = req.body.word;
+	WordModel.find({word:word}, function(err, words) {
+		debug(JSON.stringify(words));
+		/* 定义结构 */
+		var results = {};
+		for(var topKey in TypeAndSubTypes) {
+			results[topKey] = {};
+			results[topKey].score = 0;
+			results[topKey].subTypes = {};
+		}
+		
+		for(topKey in TypeAndSubTypes) {
+			for(var subKey in TypeAndSubTypes[topKey]) {
+				results[topKey].subTypes[subKey] = {};
+				results[topKey].subTypes[subKey].subScore = 0;
+				results[topKey].subTypes[subKey].actions = [];
+			}
+		}
+		/* 准备数据 */
+		for(var i in words) {
+			results[words[i].type].score += words[i].score;
+			results[words[i].type].subTypes[words[i].subType].subScore += words[i].subScore;
+			var tempFlag = true;
+			for(var x=0;x<results[words[i].type].subTypes[words[i].subType].actions.length;x++) {
+				if(words[i].action === results[words[i].type].subTypes[words[i].subType].actions[x].action) {
+					tempFlag = false;
+					break;
+				}
+			}
+			if(tempFlag) {
+				results[words[i].type].subTypes[words[i].subType].actions.push({action:words[i].action, actionScore:words[i].actionScore});
+			}
+		}
+		/* 计算路径 */
+		for(var u in results) {
+			for(var v in results[u].subTypes) {
+				var topActionScore = 0;
+				for(var w in results[u].subTypes[v].actions) {
+					if(results[u].subTypes[v].actions[w].actionScore > topActionScore) {
+						topActionScore = results[u].subTypes[v].actions[w].actionScore;
+					}
+				}
+
+				for(w in results[u].subTypes[v].actions) {
+					if(results[u].subTypes[v].actions[w].actionScore === topActionScore) {
+						results[u].subTypes[v].actions[w].isTop = true;
+						break;
+					}
+				}
+			}
+		}
+		res.end(JSON.stringify({word:word, results:results}));
+	});
+});
+
+/* 训练模块分词库 */
+router.get("/tranning_wordlist", function(req, res, next) {
+	var sentence = req.query.sentence;
+	if(!!sentence) {
+		WordModel.find({}, function(err, words) {
+			if(err) {
+				debug("/analyze:" + err);
+			} else {
+				/* 提前过滤数据，只处理句子中有包含的数据 */
+				var temp = {};
+				for(var k in words) {
+					var wk = words[k];
+					if(sentence.indexOf(wk.word) > -1) {
+						temp[wk.word] = wk;
+					}
+				}
+				res.render('tranning_wordlist', {words:temp});
+			}
+		});
+	} else {
+		res.render('analyze');
+	}
+});
+
+/* 训练模式页面 */
+router.post("/to_training", function(req, res, next) {
+	var word = req.body.word;
+	var userId = 'system_reserved';
+	res.end(JSON.stringify({word:word, userId:userId, data:TypeAndSubTypes}));
+});
+
+/* 开始训练 */
+router.post("/train", function(req, res, next) {
+	var userId = req.body.userId;
+	var word = req.body.word;
+	var type = req.body.type;
+	var subType = req.body.subType;
+	// UserTrainingModel
+	// userId:String,
+	// word:String,
+	// type:String,
+	// typeTimes:Number,
+	// subType:String,
+	// subTypeTimes:Number,
+	// action:String,
+	// actionTimes:Number
+});
+
 /* 文字编辑模块 */
 router.get("/list", function(req, res, next) {
 	var page = req.query.page;
@@ -81,11 +256,8 @@ router.get("/list", function(req, res, next) {
 	if(word !== "" && word !== undefined) {
 		params.word = word;
 	}
-	console.log("params:" + params);
 	WordModel.find(params).limit(limit).skip(skip).sort({wordLength:-1, score:-1, subScore:-1}).exec().then(function(list) {
-		console.log("params:" + params);
 		WordModel.count(params, function(err, count) {
-			console.log("count:" + count);
 			var pageCount = Math.ceil(count / pageSize);
 			var pageList = [];
 			var cursor = 0;
