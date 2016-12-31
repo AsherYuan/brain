@@ -270,8 +270,8 @@ TvShowAnalyzer.analyze = function(info, ret_callback, cb) {
 
 				function(irs, info, callback) {
 					debug(JSON.stringify(irs));
+					var data = {};
 					if(!!irs && irs.length > 0) {
-						var data = {};
 						data.delayDesc = "";
 						data.delayOrder = false;
 						data.inputstr = info.sentence;
@@ -282,7 +282,6 @@ TvShowAnalyzer.analyze = function(info, ret_callback, cb) {
 
 						ret_callback(ResponseUtil.resp(Code.OK, data));
 					} else {
-						data = {};
 						data.delayDesc = "";
 						data.delayOrder = false;
 						data.inputstr = "暂时没有电视台在播放您要看的节目";
@@ -290,7 +289,6 @@ TvShowAnalyzer.analyze = function(info, ret_callback, cb) {
 						data.iscanlearn = false;
 						data.status = "success";
 						data.orderAndInfrared = irs;
-
 						ret_callback(ResponseUtil.resp(Code.OK, data));
 					}
 				}
